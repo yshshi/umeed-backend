@@ -4,11 +4,17 @@ const { sendWelcomeEmail } = require('../services/emailService');
 const { sendReferralRegistrationAlert } = require('../services/emailService');
 const { processRegistrationCommission } = require('../services/commissionService');
 
+const ALLOWED_BUSINESS_TYPE = 'Gullak Plan';
+
 /**
  * Logged-in user registers a new member (parentId = current user, level and ancestors set)
  */
 exports.registerUnderUser = async (req, res, next) => {
   try {
+    const businessType = (req.body.businessType || '').trim();
+    if (businessType !== ALLOWED_BUSINESS_TYPE) {
+      return res.status(400).json({ success: false, message: 'Only Gullak Plan is available for registration.' });
+    }
     const parent = req.user;
     const memberId = await generateMemberId();
     const referralCode = memberId;
@@ -24,7 +30,7 @@ exports.registerUnderUser = async (req, res, next) => {
       referralCode,
       parentId: parent._id,
       level,
-      businessType: req.body.businessType.trim(),
+      businessType,
       ancestors,
     });
 
@@ -41,7 +47,7 @@ exports.registerUnderUser = async (req, res, next) => {
     });
   } catch (err) {
     if (err.code === 11000) {
-      return res.status(400).json({ success: false, message: 'Email or member ID already exists.' });
+      return res.status(400).json({ success: false, message: 'Member ID already exists. Please try again.' });
     }
     next(err);
   }

@@ -36,12 +36,12 @@ const sendMail = async (options) => {
 const sendWelcomeEmail = async (user) => {
   await sendMail({
     to: user.email,
-    subject: 'Welcome to Ummed',
+    subject: 'Welcome to Umeed',
     html: `
       <h2>Welcome, ${user.name}!</h2>
       <p>Your Member ID: <strong>${user.memberId}</strong></p>
       <p>Your Referral Code: <strong>${user.referralCode}</strong></p>
-      <p>Use this link to refer others: https://umeed-ngo.com/register?ref=${user.referralCode}</p>
+      <p>Use this link to refer others: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/register?ref=${user.referralCode}</p>
       <p>Thank you for joining.</p>
     `,
     text: `Welcome ${user.name}. Member ID: ${user.memberId}. Referral: ${user.referralCode}`,

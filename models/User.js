@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: { type: String, required: true, lowercase: true, trim: true },
     mobile: { type: String, required: true, trim: true },
     password: { type: String, required: true, select: false },
     memberId: { type: String, required: true, unique: true, uppercase: true },
@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema(
     registrationDate: { type: Date, default: Date.now },
     businessType: { type: String, required: true, trim: true },
     walletBalance: { type: Number, default: 0 },
+    depositAmount: { type: Number, default: 0 },
+    latestDepositDate: { type: Date },
+    latestDepositAmount: { type: Number, default: 0 },
+    totalDeposit: { type: Number, default: 0 },
+    totalAmount: { type: Number, default: 0 },
     totalIncome: { type: Number, default: 0 },
     totalBonus: { type: Number, default: 0 },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
@@ -28,6 +33,8 @@ const userSchema = new mongoose.Schema(
       country: { type: String, default: 'India' },
     },
     familyDetails: {
+      fatherName: String,
+      motherName: String,
       spouseName: String,
       children: String,
       dob: Date,

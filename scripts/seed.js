@@ -24,28 +24,28 @@ async function seed() {
       email: 'admin@mlm.com',
       mobile: '9999999999',
       password: hashed,
-      memberId: 'NM10000',
-      referralCode: 'NM10000',
+      memberId: 'UM10000',
+      referralCode: 'UM10000',
       role: 'admin',
       businessType: 'Platform',
       level: 0,
     });
-    console.log('Admin created: admin@mlm.com / Member ID: NM10000 / Password: admin123');
+    console.log('Admin created: admin@mlm.com / Member ID: UM10000 / Password: admin123');
   }
 
-  const root = await User.findOne({ memberId: 'NM10001' });
+  const root = await User.findOne({ memberId: 'UM10001' });
   if (!root) {
     await User.create({
       name: 'John Doe',
       email: 'john@example.com',
       mobile: '9876543210',
       password: await bcrypt.hash('password123', 12),
-      memberId: 'NM10001',
-      referralCode: 'NM10001',
-      businessType: 'Retail',
+      memberId: 'UM10001',
+      referralCode: 'UM10001',
+      businessType: 'Gullak Plan',
       level: 1,
     });
-    console.log('Sample user: john@example.com / NM10001 / password123');
+    console.log('Sample user: john@example.com / UM10001 / password123');
   }
 
   console.log('Seed done.');

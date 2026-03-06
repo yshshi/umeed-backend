@@ -10,12 +10,18 @@ const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
 
 const generateToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: JWT_EXPIRE });
 
+const ALLOWED_BUSINESS_TYPE = 'Gullak Plan';
+
 /**
  * Register new user. Referral from query ref or body referralCode.
  * parentId and level set from referrer. ancestors built for tree.
  */
 exports.register = async (req, res, next) => {
   try {
+    const businessType = (req.body.businessType || '').trim();
+    if (businessType !== ALLOWED_BUSINESS_TYPE) {
+      return res.status(400).json({ success: false, message: 'Only Gullak Plan is available for registration.' });
+    }
     const ref = req.body.referralCode || req.query.ref;
     let parent = null;
     if (ref) {
@@ -39,7 +45,7 @@ exports.register = async (req, res, next) => {
       referralCode,
       parentId: parent?._id || null,
       level,
-      businessType: req.body.businessType.trim(),
+      businessType,
       ancestors,
     });
 
@@ -62,7 +68,7 @@ exports.register = async (req, res, next) => {
     });
   } catch (err) {
     if (err.code === 11000) {
-      return res.status(400).json({ success: false, message: 'Email or member ID already exists.' });
+      return res.status(400).json({ success: false, message: 'Member ID already exists. Please try again.' });
     }
     next(err);
   }
