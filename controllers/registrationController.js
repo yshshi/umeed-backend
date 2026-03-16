@@ -2,7 +2,6 @@ const User = require('../models/User');
 const generateMemberId = require('../utils/generateMemberId');
 const { sendWelcomeEmail } = require('../services/emailService');
 const { sendReferralRegistrationAlert } = require('../services/emailService');
-const { processRegistrationCommission } = require('../services/commissionService');
 
 const ALLOWED_BUSINESS_TYPE = 'Gullak Plan';
 
@@ -11,6 +10,12 @@ const ALLOWED_BUSINESS_TYPE = 'Gullak Plan';
  */
 exports.registerUnderUser = async (req, res, next) => {
   try {
+    if (!req.user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: 'Your account must be activated by an admin to add referrals.',
+      });
+    }
     const businessType = (req.body.businessType || '').trim();
     if (businessType !== ALLOWED_BUSINESS_TYPE) {
       return res.status(400).json({ success: false, message: 'Only Gullak Plan is available for registration.' });
@@ -38,7 +43,6 @@ exports.registerUnderUser = async (req, res, next) => {
 
     sendWelcomeEmail(user).catch(() => {});
     sendReferralRegistrationAlert(parent, user).catch(() => {});
-    processRegistrationCommission(user).catch((err) => console.error('Commission error:', err));
 
     res.status(201).json({
       success: true,

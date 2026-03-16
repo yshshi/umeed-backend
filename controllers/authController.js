@@ -3,8 +3,6 @@ const User = require('../models/User');
 const generateMemberId = require('../utils/generateMemberId');
 const { sendWelcomeEmail } = require('../services/emailService');
 const { sendReferralRegistrationAlert } = require('../services/emailService');
-const { processRegistrationCommission } = require('../services/commissionService');
-
 const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret-change-in-production';
 const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
 
@@ -58,7 +56,6 @@ exports.register = async (req, res, next) => {
     // Notify parent
     if (parent) {
       sendReferralRegistrationAlert(parent, user).catch(() => {});
-      processRegistrationCommission(user).catch((err) => console.error('Commission error:', err));
     }
 
     res.status(201).json({
@@ -79,17 +76,42 @@ exports.register = async (req, res, next) => {
  */
 exports.login = async (req, res, next) => {
   try {
-    const user = await User.findOne({ memberId: req.body.memberId.toUpperCase().trim() }).select('+password');
-    if (!user || !(await user.comparePassword(req.body.password))) {
+    console.log("Login request received:", req.body);
+
+    const memberId = req.body.memberId?.toUpperCase().trim();
+    console.log("Formatted Member ID:", memberId);
+
+    const user = await User.findOne({ memberId }).select('+password');
+    console.log("User found:", user ? user._id : "No user found");
+
+    if (!user) {
+      console.log("Login failed: User not found");
       return res.status(401).json({ success: false, message: 'Invalid Member ID or password.' });
     }
+
+    const isPasswordValid = await user.comparePassword(req.body.password);
+    console.log("Password valid:", isPasswordValid);
+
+    if (!isPasswordValid) {
+      console.log("Login failed: Invalid password");
+      return res.status(401).json({ success: false, message: 'Invalid Member ID or password.' });
+    }
+
     if (!user.isActive) {
+      console.log("Login failed: Account deactivated for user:", user._id);
       return res.status(403).json({ success: false, message: 'Account is deactivated.' });
     }
+
     const token = generateToken(user._id);
+    console.log("Token generated for user:", user._id);
+
     const userResponse = await User.findById(user._id).select('-password').lean();
+    console.log("User response prepared");
+
     res.json({ success: true, token, user: userResponse });
+
   } catch (err) {
+    console.error("Login error:", err);
     next(err);
   }
 };
